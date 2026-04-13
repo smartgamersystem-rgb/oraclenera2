@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tarot Gallery</title>
+  <style>
+    :root {
+      --bg: #0f1115;
+      --panel: #171a21;
+      --panel-2: #1f2430;
+      --text: #f5f7fb;
+      --muted: #aab3c5;
+      --accent: #d4af37;
+      --border: rgba(255,255,255,0.08);
+      --shadow: 0 10px 30px rgba(0,0,0,0.35);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(180deg, #0b0d12 0%, #131722 100%);
+      color: var(--text);
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .title-wrap h1 {
+      margin: 0;
+      font-size: 2rem;
+      letter-spacing: 0.5px;
+    }
+
+    .title-wrap p {
+      margin: 8px 0 0;
+      color: var(--muted);
+    }
+
+    button {
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 12px;
+      outline: none;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      background: var(--panel-2);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 22px;
+    }
+
+    .sidebar, .gallery-panel {
+      background: rgba(23, 26, 33, 0.85);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .sidebar {
+      padding: 18px;
+      position: sticky;
+      top: 18px;
+      height: fit-content;
+    }
+
+    .sidebar h2, .gallery-panel h2 {
+      margin-top: 0;
+      font-size: 1.1rem;
+      color: var(--accent);
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 0.92rem;
+      margin-bottom: 8px;
+      color: var(--muted);
+    }
+
+    .field textarea {
+      width: 100%;
+      min-height: 140px;
+      resize: vertical;
+      border: 1px solid var(--border);
+      background: #0d1016;
+      color: var(--text);
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 0.95rem;
+    }
+
+    .status {
+      font-size: 0.88rem;
+      color: #8fd19e;
+      margin-top: 8px;
+      min-height: 18px;
+    }
+
+    .list-buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .list-buttons button.active {
+      border-color: var(--accent);
+      box-shadow: inset 0 0 0 1px var(--accent);
+    }
+
+    .gallery-panel {
+      padding: 18px;
+    }
+
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .counter {
+      color: var(--muted);
+      font-size: 0.94rem;
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: #0f131b;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: 0.25s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 30px rgba(0,0,0,0.35);
+      border-color: rgba(212,175,55,0.35);
+    }
+
+    .thumb {
+      width: 100%;
+      aspect-ratio: 3 / 4;
+      object-fit: cover;
+      display: block;
+      background: #0a0d13;
+    }
+
+    .meta {
+      padding: 12px;
+    }
+
+    .meta strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.96rem;
+      word-break: break-word;
+    }
+
+    .meta small {
+      color: var(--muted);
+      line-height: 1.4;
+      display: block;
+      min-height: 38px;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.82);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      padding: 24px;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-content {
+      width: min(1100px, 100%);
+      background: #10141c;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .modal-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      min-height: 70vh;
+    }
+
+    .image-wrap {
+      background: #090c11;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .image-wrap img {
+      max-width: 100%;
+      max-height: 75vh;
+      object-fit: contain;
+      border-radius: 14px;
+    }
+
+    .info-wrap {
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .info-wrap h3 {
+      margin: 0;
+      font-size: 1.3rem;
+      color: var(--accent);
+      word-break: break-word;
+    }
+
+    .info-wrap p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .modal-notes {
+      width: 100%;
+      min-height: 180px;
+      resize: vertical;
+      border: 1px solid var(--border);
+      background: #0d1016;
+      color: var(--text);
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 0.95rem;
+    }
+
+    .modal-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: auto;
+    }
+
+    .nav-buttons, .close-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .footer-note {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 1024px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { position: static; }
+      .modal-grid { grid-template-columns: 1fr; }
+      .image-wrap img { max-height: 50vh; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="title-wrap">
+        <h1>Tarot Gallery</h1>
+        <p>PNG gallery with two lists, modal viewer, notes, auto-save, and TXT export.</p>
+      </div>
+      <div>
+        <button id="reloadBtn">Reload Images</button>
+        <button id="exportBtn">Export Notes (.txt)</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <aside class="sidebar">
+        <h2>List Controls</h2>
+
+        <div class="list-buttons">
+          <button id="list1Btn" class="active">List 1</button>
+          <button id="list2Btn">List 2</button>
+        </div>
+
+        <div class="field">
+          <label for="globalNote">General notes for the current list</label>
+          <textarea id="globalNote" placeholder="Write general observations for this list..."></textarea>
+          <div class="status" id="saveStatus"></div>
+        </div>
+
+        <div class="field">
+          <label>Information</label>
+          <div style="color: var(--muted); line-height: 1.6; font-size: 0.94rem;">
+            PNG is fixed by default.<br><br>
+            <strong>List 1</strong> loads:<br>
+            <strong>1.png</strong> to <strong>22.png</strong><br><br>
+
+            <strong>List 2</strong> loads:<br>
+            <strong>1 (1).png</strong> to <strong>1 (22).png</strong><br><br>
+
+            Put this HTML file in the same folder as all images.
+          </div>
+        </div>
+      </aside>
+
+      <section class="gallery-panel">
+        <div class="topbar">
+          <h2 id="galleryTitle">List 1</h2>
+          <div class="counter" id="counter">0 cards loaded</div>
+        </div>
+
+        <div class="gallery" id="gallery"></div>
+
+        <div class="footer-note">
+          Required filenames:<br>
+          List 1 → 1.png, 2.png, 3.png ... 22.png<br>
+          List 2 → 1 (1).png, 1 (2).png, 1 (3).png ... 1 (22).png
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="modal" id="modal">
+    <div class="modal-content">
+      <div class="modal-grid">
+        <div class="image-wrap">
+          <img id="modalImg" src="" alt="Card" />
+        </div>
+
+        <div class="info-wrap">
+          <div class="close-row">
+            <button id="closeModal">Close</button>
+          </div>
+
+          <h3 id="modalTitle">Card</h3>
+          <p id="modalSubtitle">Expanded view of the selected card.</p>
+
+          <div>
+            <label for="modalNotes" style="display:block; margin-bottom:8px; color:var(--muted);">
+              Notes for this card
+            </label>
+            <textarea id="modalNotes" class="modal-notes" placeholder="Write the note for this card here..."></textarea>
+          </div>
+
+          <div class="modal-actions">
+            <div class="nav-buttons">
+              <button id="prevBtn">◀ Previous</button>
+              <button id="nextBtn">Next ▶</button>
+            </div>
+            <div class="nav-buttons">
+              <button id="saveCardNote">Save Note</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const TOTAL_CARDS = 22;
+    const FIXED_EXT = 'png';
+
+    const gallery = document.getElementById('gallery');
+    const galleryTitle = document.getElementById('galleryTitle');
+    const counter = document.getElementById('counter');
+    const list1Btn = document.getElementById('list1Btn');
+    const list2Btn = document.getElementById('list2Btn');
+    const globalNote = document.getElementById('globalNote');
+    const saveStatus = document.getElementById('saveStatus');
+    const exportBtn = document.getElementById('exportBtn');
+    const reloadBtn = document.getElementById('reloadBtn');
+
+    const modal = document.getElementById('modal');
+    const modalImg = document.getElementById('modalImg');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalSubtitle = document.getElementById('modalSubtitle');
+    const modalNotes = document.getElementById('modalNotes');
+    const closeModal = document.getElementById('closeModal');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const saveCardNote = document.getElementById('saveCardNote');
+
+    let currentList = 'list1';
+    let currentIndex = 0;
+
+    function keyForGlobal(list) {
+      return `tarot_global_${list}`;
+    }
+
+    function keyForCard(list, index) {
+      return `tarot_card_${list}_${index}`;
+    }
+
+    function showSaved(text = 'Saved automatically') {
+      saveStatus.textContent = text;
+      setTimeout(() => {
+        if (saveStatus.textContent === text) {
+          saveStatus.textContent = '';
+        }
+      }, 1800);
+    }
+
+    function saveGlobalNote() {
+      localStorage.setItem(keyForGlobal(currentList), globalNote.value);
+      showSaved();
+    }
+
+    function loadGlobalNote() {
+      globalNote.value = localStorage.getItem(keyForGlobal(currentList)) || '';
+    }
+
+    function getCardNote(index) {
+      return localStorage.getItem(keyForCard(currentList, index)) || '';
+    }
+
+    function saveCardCurrentNote() {
+      localStorage.setItem(keyForCard(currentList, currentIndex), modalNotes.value);
+      renderGallery();
+      showSaved('Card note saved');
+    }
+
+    function imagePath(index) {
+      const num = index + 1;
+
+      if (currentList === 'list1') {
+        return `${num}.${FIXED_EXT}`;
+      }
+
+      return `1 (${num}).${FIXED_EXT}`;
+    }
+
+    function imageLabel(index) {
+      const num = index + 1;
+
+      if (currentList === 'list1') {
+        return `${num}.${FIXED_EXT}`;
+      }
+
+      return `1 (${num}).${FIXED_EXT}`;
+    }
+
+    function setActiveListButtons() {
+      list1Btn.classList.toggle('active', currentList === 'list1');
+      list2Btn.classList.toggle('active', currentList === 'list2');
+      galleryTitle.textContent = currentList === 'list1' ? 'List 1' : 'List 2';
+    }
+
+    function renderGallery() {
+      gallery.innerHTML = '';
+      let loadedCount = 0;
+
+      for (let i = 0; i < TOTAL_CARDS; i++) {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.dataset.index = i;
+
+        const img = document.createElement('img');
+        img.className = 'thumb';
+        img.alt = imageLabel(i);
+        img.src = imagePath(i);
+
+        img.onload = () => {
+          loadedCount++;
+          counter.textContent = `${loadedCount} cards loaded`;
+        };
+
+        img.onerror = () => {
+          img.src = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+            <svg xmlns="http://www.w3.org/2000/svg" width="600" height="800">
+              <rect width="100%" height="100%" fill="#0d1016"/>
+              <text x="50%" y="44%" text-anchor="middle" fill="#d4af37" font-size="28" font-family="Arial">Image not found</text>
+              <text x="50%" y="52%" text-anchor="middle" fill="#9aa4b5" font-size="22" font-family="Arial">${imageLabel(i)}</text>
+            </svg>
+          `);
+        };
+
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        const note = getCardNote(i);
+
+        meta.innerHTML = `
+          <strong>${imageLabel(i)}</strong>
+          <small>${note ? note.substring(0, 90) + (note.length > 90 ? '...' : '') : 'No notes yet.'}</small>
+        `;
+
+        card.appendChild(img);
+        card.appendChild(meta);
+        card.addEventListener('click', () => openModal(i));
+        gallery.appendChild(card);
+      }
+
+      counter.textContent = `${TOTAL_CARDS} cards in the gallery`;
+    }
+
+    function openModal(index) {
+      currentIndex = index;
+      modalImg.src = imagePath(index);
+      modalTitle.textContent = imageLabel(index);
+      modalSubtitle.textContent = currentList === 'list1' ? 'Active list: List 1' : 'Active list: List 2';
+      modalNotes.value = getCardNote(index);
+      modal.classList.add('show');
+    }
+
+    function closeModalFn() {
+      modal.classList.remove('show');
+    }
+
+    function nextCard() {
+      currentIndex = (currentIndex + 1) % TOTAL_CARDS;
+      openModal(currentIndex);
+    }
+
+    function prevCard() {
+      currentIndex = (currentIndex - 1 + TOTAL_CARDS) % TOTAL_CARDS;
+      openModal(currentIndex);
+    }
+
+    function switchList(listName) {
+      currentList = listName;
+      setActiveListButtons();
+      loadGlobalNote();
+      renderGallery();
+    }
+
+    function exportTxt() {
+      const output = [];
+
+      ['list1', 'list2'].forEach(list => {
+        output.push(`==== ${list.toUpperCase()} ====`);
+        output.push('');
+        output.push('General note:');
+        output.push(localStorage.getItem(keyForGlobal(list)) || '(empty)');
+        output.push('');
+
+        for (let i = 0; i < TOTAL_CARDS; i++) {
+          const num = i + 1;
+          const label = list === 'list1'
+            ? `${num}.${FIXED_EXT}`
+            : `1 (${num}).${FIXED_EXT}`;
+
+          output.push(label);
+          output.push(localStorage.getItem(keyForCard(list, i)) || '(no note)');
+          output.push('');
+        }
+
+        output.push('');
+      });
+
+      const blob = new Blob([output.join('\n')], { type: 'text/plain;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'tarot_notes_export.txt';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    globalNote.addEventListener('input', saveGlobalNote);
+    list1Btn.addEventListener('click', () => switchList('list1'));
+    list2Btn.addEventListener('click', () => switchList('list2'));
+    exportBtn.addEventListener('click', exportTxt);
+    reloadBtn.addEventListener('click', renderGallery);
+
+    modalNotes.addEventListener('input', () => {
+      localStorage.setItem(keyForCard(currentList, currentIndex), modalNotes.value);
+      renderGallery();
+      showSaved();
+    });
+
+    closeModal.addEventListener('click', closeModalFn);
+    prevBtn.addEventListener('click', prevCard);
+    nextBtn.addEventListener('click', nextCard);
+    saveCardNote.addEventListener('click', saveCardCurrentNote);
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModalFn();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (!modal.classList.contains('show')) return;
+      if (e.key === 'Escape') closeModalFn();
+      if (e.key === 'ArrowRight') nextCard();
+      if (e.key === 'ArrowLeft') prevCard();
+    });
+
+    setActiveListButtons();
+    loadGlobalNote();
+    renderGallery();
+  </script>
+</body>
+</html>
